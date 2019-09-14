@@ -8,6 +8,8 @@
 
 import UIKit
 
+let plistPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+
 class TodoListViewController: UITableViewController {
     
     
@@ -17,43 +19,32 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let object = ItemModel()
-        object.title = "Milk"
-        self.todoListArray.append(object)
+//        let object = ItemModel()
+//        object.title = "Milk"
+//        self.todoListArray.append(object)
+//
+//        let object1 = ItemModel()
+//        object1.title = "Find boom"
+//        self.todoListArray.append(object1)
+//
+//        let object2 = ItemModel()
+//        object2.title = "Drop Weapons"
+//        self.todoListArray.append(object2)
         
-        let object1 = ItemModel()
-        object1.title = "Find boom"
-        self.todoListArray.append(object1)
+    
+        loadItems()
         
-        let object2 = ItemModel()
-        object2.title = "Drop Weapons"
-        self.todoListArray.append(object2)
-        
-        let object3 = ItemModel()
-        object3.title = "Surrender your self"
-        self.todoListArray.append(object3)
-        
-        let object4 = ItemModel()
-        object4.title = "Find sugar"
-        self.todoListArray.append(object4)
-        
-        let object5 = ItemModel()
-        object5.title = "Find Money"
-        self.todoListArray.append(object5)
-        
-        let object6 = ItemModel()
-        object6.title = "Bharat"
-        self.todoListArray.append(object6)
-        
-        let object7 = ItemModel()
-        object7.title = "Sadabahar"
-        self.todoListArray.append(object7)
-        
-        
-//        if let arrayList = userDefaults.array(forKey: "arrayList") as? [ItemModel] {
-//            todoListArray = arrayList
-//        }
-        
+    }
+    
+    func loadItems()  {
+        if let data = try? Data(contentsOf: plistPath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                todoListArray = try decoder.decode([ItemModel].self, from: data)
+            }catch {
+                print("Error decoding item array, \(error)")
+            }
+        }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -75,7 +66,7 @@ class TodoListViewController: UITableViewController {
 
         
         todoListArray[indexPath.row].done = !todoListArray[indexPath.row].done
-        
+        saveTodoList()
         tableView.reloadData()
     }
     
@@ -92,12 +83,8 @@ class TodoListViewController: UITableViewController {
                 
                 let object = ItemModel()
                 object.title = textField.text!
-                object.done = false
                 self.todoListArray.append(object)
-//                self.userDefaults.set(self.todoListArray, forKey: "arrayList")
-//                self.userDefaults.synchronize()
-                
-                self.tableView.reloadData()
+                self.saveTodoList()
             }
         }
         alert.addTextField { (alertTextField) in
@@ -108,6 +95,20 @@ class TodoListViewController: UITableViewController {
         
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func saveTodoList()  {
+        
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(self.todoListArray)
+            try data.write(to: plistPath!)
+        }catch {
+            print("Error Occured: \(error)")
+        }
+        
+        self.tableView.reloadData()
     }
     
 }
