@@ -40,6 +40,9 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="todoListTableView" destination="PFv-Ze-QeO" id="BiI-fp-JiG"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rpi-A5-wl3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
