@@ -7,45 +7,25 @@
 //
 
 import UIKit
+import CoreData
 
 let plistPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
 class TodoListViewController: UITableViewController {
     
     
-    var todoListArray = [ItemModel]()
+    var todoListArray = [Item]()
     var userDefaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-//        let object = ItemModel()
-//        object.title = "Milk"
-//        self.todoListArray.append(object)
-//
-//        let object1 = ItemModel()
-//        object1.title = "Find boom"
-//        self.todoListArray.append(object1)
-//
-//        let object2 = ItemModel()
-//        object2.title = "Drop Weapons"
-//        self.todoListArray.append(object2)
-        
+
     
         loadItems()
         
     }
     
-    func loadItems()  {
-        if let data = try? Data(contentsOf: plistPath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                todoListArray = try decoder.decode([ItemModel].self, from: data)
-            }catch {
-                print("Error decoding item array, \(error)")
-            }
-        }
-    }
+
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return todoListArray.count
@@ -64,10 +44,11 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
+        //delete Item from list from coreData
+      //  mainContext.delete(todoListArray[indexPath.row])
         
         todoListArray[indexPath.row].done = !todoListArray[indexPath.row].done
         saveTodoList()
-        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -81,9 +62,10 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             if textField.text != "" {
                 
-                let object = ItemModel()
-                object.title = textField.text!
-                self.todoListArray.append(object)
+                let newobject = Item(context: mainContext)
+                newobject.title = textField.text!
+                newobject.done  = false
+                self.todoListArray.append(newobject)
                 self.saveTodoList()
             }
         }
@@ -97,15 +79,27 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    //MARK:- Module manupulation Methods
     func saveTodoList()  {
         
-        let encoder = PropertyListEncoder()
-        
         do {
-            let data = try encoder.encode(self.todoListArray)
-            try data.write(to: plistPath!)
+           try mainContext.save()
         }catch {
-            print("Error Occured: \(error)")
+            print("Error saving context :- \(error)")
+        }
+        
+        self.tableView.reloadData()
+    }
+    
+    func loadItems()  {
+        let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
+        
+      //  let fetchRequest = NSFetchRequest<Item>(entityName: "Item")
+        do  {
+            self.todoListArray = try mainContext.fetch(fetchRequest)
+        }
+        catch {
+            print("Error while fetching data: \(error)")
         }
         
         self.tableView.reloadData()
