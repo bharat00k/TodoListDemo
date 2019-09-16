@@ -13,6 +13,7 @@
 		4FC1D0EA23219020006F1A9F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4FC1D0E823219020006F1A9F /* Main.storyboard */; };
 		4FC1D0EC23219026006F1A9F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC1D0EB23219026006F1A9F /* Assets.xcassets */; };
 		4FC1D0EF23219026006F1A9F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4FC1D0ED23219026006F1A9F /* LaunchScreen.storyboard */; };
+		4FC6E5A3232FF8490013087A /* CategoryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6E5A2232FF8490013087A /* CategoryTableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		4FC1D0EB23219026006F1A9F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4FC1D0EE23219026006F1A9F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4FC1D0F023219026006F1A9F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4FC6E5A2232FF8490013087A /* CategoryTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +88,7 @@
 		4FD7071C232D87A400D5493B /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				4FC6E5A2232FF8490013087A /* CategoryTableViewController.swift */,
 				4FC1D0E623219020006F1A9F /* TodoListViewController.swift */,
 			);
 			path = Controller;
@@ -165,6 +168,7 @@
 				4F618D36232E51A9008ADA12 /* DataModel.xcdatamodeld in Sources */,
 				4FC1D0E723219020006F1A9F /* TodoListViewController.swift in Sources */,
 				4FC1D0E523219020006F1A9F /* AppDelegate.swift in Sources */,
+				4FC6E5A3232FF8490013087A /* CategoryTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
