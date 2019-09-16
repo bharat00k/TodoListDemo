@@ -15,12 +15,11 @@ class TodoListViewController: UITableViewController {
     
     
     var todoListArray = [Item]()
-    var userDefaults = UserDefaults.standard
+    @IBOutlet weak var searchBar: UISearchBar!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-    
         loadItems()
         
     }
@@ -91,12 +90,12 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }
     
-    func loadItems()  {
-        let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest())  {
+      //  let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
         
       //  let fetchRequest = NSFetchRequest<Item>(entityName: "Item")
         do  {
-            self.todoListArray = try mainContext.fetch(fetchRequest)
+            self.todoListArray = try mainContext.fetch(request)
         }
         catch {
             print("Error while fetching data: \(error)")
@@ -107,3 +106,24 @@ class TodoListViewController: UITableViewController {
     
 }
 
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+}
