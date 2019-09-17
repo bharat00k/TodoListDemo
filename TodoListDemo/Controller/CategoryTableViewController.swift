@@ -7,11 +7,13 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoryTableViewController: UITableViewController {
     
-    var categoryList = [Category]()
+    var categoryList: Results<Category>?
+    
+    var realm = try! Realm()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,10 +32,9 @@ class CategoryTableViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             if textField.text != "" {
                 
-                let newobject = Category(context: mainContext)
+                let newobject = Category()
                 newobject.name = textField.text!
-                self.categoryList.append(newobject)
-                self.saveTodoList()
+                self.save(category: newobject)
             }
         }
         alert.addTextField { (alertTextField) in
@@ -48,15 +49,14 @@ class CategoryTableViewController: UITableViewController {
     
     //MARK:- TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryList.count
+        return categoryList?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
-        
-        let dataObject = categoryList[indexPath.row]
-        cell.textLabel?.text = dataObject.name
+
+        cell.textLabel?.text = categoryList?[indexPath.row].name ?? ""
         return cell
         
     }
@@ -70,26 +70,22 @@ class CategoryTableViewController: UITableViewController {
     }
 
     //MARK:- Module manupulation Methods
-    func saveTodoList()  {
-        
+    func save(category: Category)  {
         do {
-            try mainContext.save()
+            try realm.write {
+                realm.add(category)
+            }
         }catch {
-            print("Error saving context :- \(error)")
+            print("Error saving realm Data :- \(error)")
         }
         
         self.tableView.reloadData()
     }
     
 
-    func loadCategory(with request: NSFetchRequest<Category> = Category.fetchRequest())  {
+    func loadCategory()  {
+        self.categoryList = realm.objects(Category.self)
 
-        do  {
-            self.categoryList = try mainContext.fetch(request)
-        }
-        catch {
-            print("Error while fetching data: \(error)")
-        }
         
         self.tableView.reloadData()
     }
@@ -98,7 +94,7 @@ class CategoryTableViewController: UITableViewController {
         if segue.identifier == "toItemList" {
             let destinationVC = segue.destination as! TodoListViewController
             if let indexPath = tableView.indexPathForSelectedRow {
-                destinationVC.selectedCatory = categoryList[indexPath.row]
+                destinationVC.selectedCatory = categoryList?[indexPath.row]
             }
         }
     }

@@ -7,14 +7,18 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 let plistPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
 class TodoListViewController: UITableViewController {
     
     
-    var todoListArray = [Item]()
+    var todoListArray: Results<Item>?
+    
+    var realm = try! Realm()
+    
+
     var selectedCatory: Category? {
         didSet {
             loadItems()
@@ -24,35 +28,50 @@ class TodoListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-       // loadItems()
-        
     }
     
 
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return todoListArray.count
+        return todoListArray?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "todoListCell", for: indexPath)
-        
-        let dataObject = todoListArray[indexPath.row]
-        cell.textLabel?.text = dataObject.title
-        cell.accessoryType = dataObject.done ? .checkmark : .none
+      
+        cell.textLabel?.text = todoListArray?[indexPath.row].title ?? "No Item"
+        cell.accessoryType = todoListArray?[indexPath.row].done ?? false ? .checkmark : .none
         return cell
         
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
-        //delete Item from list from coreData
-      //  mainContext.delete(todoListArray[indexPath.row])
         
-        todoListArray[indexPath.row].done = !todoListArray[indexPath.row].done
-        saveTodoList()
+        //Update Data
+        if let item = todoListArray?[indexPath.row] {
+            do {
+                try realm.write {
+                    item.done = !item.done
+                }
+            }catch {
+                print("Error saving realm data :- \(error)")
+            }
+        }
+        
+        //Delete Items
+//        if let item = todoListArray?[indexPath.row] {
+//            do {
+//                try realm.write {
+//                    realm.delete(item)
+//                }
+//            }catch {
+//                print("Error saving realm data :- \(error)")
+//            }
+//        }
+        
+         self.tableView.reloadData()
+
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -66,12 +85,21 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             if textField.text != "" {
                 
-                let newobject = Item(context: mainContext)
-                newobject.title = textField.text!
-                newobject.done  = false
-                newobject.parentCategory = self.selectedCatory
-                self.todoListArray.append(newobject)
-                self.saveTodoList()
+                if let currentCategory = self.selectedCatory {
+                   
+                    do {
+                       try self.realm.write {
+                            let newobject = Item()
+                            newobject.title = textField.text!
+                            newobject.done  = false
+                            currentCategory.items.append(newobject)
+                        }
+                    }catch {
+                        print("Error While Saving data \(error)")
+                    }
+                }
+                    
+                self.tableView.reloadData()
             }
         }
         alert.addTextField { (alertTextField) in
@@ -85,38 +113,28 @@ class TodoListViewController: UITableViewController {
     }
     
     //MARK:- Module manupulation Methods
-    func saveTodoList()  {
+    func saveTodoList(item: Item)  {
         
         do {
-           try mainContext.save()
+            try realm.write {
+                realm.add(item)
+            }
         }catch {
-            print("Error saving context :- \(error)")
+            print("Error saving realm data :- \(error)")
         }
         
         self.tableView.reloadData()
     }
     
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil)  {
+    func loadItems()  {
      
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCatory!.name!)
-        
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
-        }else{
-             request.predicate = categoryPredicate
-        }
-        
-        do  {
-            self.todoListArray = try mainContext.fetch(request)
-        }
-        catch {
-            print("Error while fetching data: \(error)")
-        }
+        todoListArray = selectedCatory?.items.sorted(byKeyPath: "title", ascending: true)
         
         self.tableView.reloadData()
     }
     
 }
+/*
 
 extension TodoListViewController: UISearchBarDelegate {
     
@@ -138,4 +156,4 @@ extension TodoListViewController: UISearchBarDelegate {
             }
         }
     }
-}
+} */
